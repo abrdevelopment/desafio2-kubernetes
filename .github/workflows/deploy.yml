@@ -1,0 +1,53 @@
+name: CI/CD para Kubernetes com Kind
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Login no Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Instalar Kind
+        run: |
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
+          chmod +x ./kind
+          sudo mv ./kind /usr/local/bin/kind
+
+      - name: Criar cluster Kind (1 node padrão)
+        run: kind create cluster
+
+      - name: Instalar kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+      - name: Build da imagem Docker App
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/desafio2-kubernetes-app:1.0 app/.
+
+      - name: Build da imagem Docker Database
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/desafio2-kubernetes-database:1.0 database/.
+
+      - name: Push da imagem App
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/desafio2-kubernetes-app:1.0
+
+      - name: Push da imagem Database
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/desafio2-kubernetes-database:1.0
+
+      - name: Carregar imagem App no Kind
+        run: kind load docker-image ${{ secrets.DOCKER_USERNAME }}/desafio2-kubernetes-app:1.0
+
+      - name: Carregar imagem Database no Kind
+        run: kind load docker-image ${{ secrets.DOCKER_USERNAME }}/desafio2-kubernetes-database:1.0
+
+      - name: Aplicar manifestos Kubernetes
+        run: kubectl apply -f k8s/ --record
