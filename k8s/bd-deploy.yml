@@ -19,13 +19,13 @@ spec:
           env:
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
-                secretRef:
+                secretKeyRef:
                   name: my-secret
                   key: ROOT_PASSWORD
 
             - name: MYSQL_DATABASE
               valueFrom:
-                secretRef:
+                secretKeyRef:
                   name: my-secret
                   key: MYSQL_DATABASE
 
