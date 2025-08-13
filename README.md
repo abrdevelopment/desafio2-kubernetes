@@ -1,4 +1,4 @@
-# 🚀 Desafio 2 - Kubernetes (Kind)
+# 🚀 Desafio 2 - Kubernetes DIO
 
 ![Kubernetes](https://upload.wikimedia.org/wikipedia/commons/3/39/Kubernetes_logo_without_workmark.svg)
 
